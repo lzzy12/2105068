@@ -6,17 +6,22 @@ let numbers: number[] = []
 calcRouter.get('/numbers/:numberId', async (req: Request, res: Response) => {
     const authPayload = {
         "companyName": "Shivam Jha",
-        "clientID": "9b92075b-d8d5-4935-8980-eb31a69cc9f2",
-        "clientSecret": "ERUYgzawNmBCborS",
+        "clientID": "2a0e9485-7db8-419b-8c00-4c339b2fc2f2",
+        "clientSecret": "mjOCoZipxwRkZwaJ",
         "ownerName": "Shivam Jha",
-        "ownerEmail": "2105068@kiit.ac.in",
+        "ownerEmail": "2105068.2@kiit.ac.in",
         "rollNo": "2105068"
     }
+    const authFetch = await fetch('http://20.244.56.144/test/auth', {
+        method: 'POST',
+        body: JSON.stringify(authPayload),
+    })
+    const authRes = await authFetch.json();
     try {
         let endpoint;
         switch (req.params.numberId) {
             case 'p':
-                endpoint = 'prime';
+                endpoint = 'primes';
                 break;
             case 'f':
                 endpoint = 'fibo';
@@ -34,7 +39,7 @@ calcRouter.get('/numbers/:numberId', async (req: Request, res: Response) => {
         const response = await fetch(`http://20.244.56.144/test/${endpoint}`, {
             method: 'GET',
             headers: {
-                "Authorization": `Bearer ${process.env.TOKEN}`
+                "Authorization": `Bearer ${authRes.access_token}`
             }
         });
         const responseFromTestServer = await response.json();

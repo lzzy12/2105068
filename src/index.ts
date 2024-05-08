@@ -2,7 +2,9 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import calcRouter from './calculator';
+import dotenv from 'dotenv'
 
+dotenv.config()
 const app: Application = express();
 const port = 3000;
 
