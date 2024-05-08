@@ -3,20 +3,29 @@ import { Router, Request, Response } from 'express';
 const calcRouter = Router();
 
 let numbers: number[] = []
+
+let accessToken: string | null = null;
+let accessTokenExpiry: number | null = null;
 calcRouter.get('/numbers/:numberId', async (req: Request, res: Response) => {
-    const authPayload = {
-        "companyName": "Shivam Jha",
-        "clientID": "2a0e9485-7db8-419b-8c00-4c339b2fc2f2",
-        "clientSecret": "mjOCoZipxwRkZwaJ",
-        "ownerName": "Shivam Jha",
-        "ownerEmail": "2105068.2@kiit.ac.in",
-        "rollNo": "2105068"
+    if (!(accessToken && accessTokenExpiry && accessTokenExpiry > Date.now())) {
+        const authPayload = {
+            "companyName": process.env.company,
+            "clientID": process.env.clientId,
+            "clientSecret": process.env.clientSecret,
+            "ownerName": process.env.ownerName,
+            "ownerEmail": process.env.ownerEmail,
+            "rollNo": process.env.rollNo
+        }
+        const authFetch = await fetch('http://20.244.56.144/test/auth', {
+            method: 'POST',
+            body: JSON.stringify(authPayload),
+        })
+        const authRes = await authFetch.json();
+        accessToken = authRes.access_token;
+        accessTokenExpiry = authRes.expires_in * 1000;
+
     }
-    const authFetch = await fetch('http://20.244.56.144/test/auth', {
-        method: 'POST',
-        body: JSON.stringify(authPayload),
-    })
-    const authRes = await authFetch.json();
+    
     try {
         let endpoint;
         switch (req.params.numberId) {
@@ -39,17 +48,20 @@ calcRouter.get('/numbers/:numberId', async (req: Request, res: Response) => {
         const response = await fetch(`http://20.244.56.144/test/${endpoint}`, {
             method: 'GET',
             headers: {
-                "Authorization": `Bearer ${authRes.access_token}`
+                "Authorization": `Bearer ${accessToken}`
             }
         });
         const responseFromTestServer = await response.json();
         console.log(responseFromTestServer);
         const windowPrevState = [...numbers];
         numbers = [...numbers, ...responseFromTestServer.numbers].slice(-parseInt(process.env.WINDOW_SIZE ?? "10"));
+        let sum = 0;
+        numbers.forEach(( num) => {sum += num})
         const json = {
             windowPrevState,
             windowCurrentState: numbers,
             numbers: responseFromTestServer.numbers,
+            avg: sum / numbers.length
         }
         res.status(200).json(json);
     } catch (e) {
