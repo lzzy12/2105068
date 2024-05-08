@@ -4,46 +4,41 @@ const calcRouter = Router();
 
 let numbers: number[] = []
 calcRouter.get('/numbers/:numberId', async (req: Request, res: Response) => {
+    const authPayload = {
+        "companyName": "Shivam Jha",
+        "clientID": "9b92075b-d8d5-4935-8980-eb31a69cc9f2",
+        "clientSecret": "ERUYgzawNmBCborS",
+        "ownerName": "Shivam Jha",
+        "ownerEmail": "2105068@kiit.ac.in",
+        "rollNo": "2105068"
+    }
     try {
-        let responseFromTestServer: { numbers: [] };
+        let endpoint;
         switch (req.params.numberId) {
             case 'p':
-                {
-                    const response = await fetch('http://20.244.56.144/test/prime', {
-                        method: 'GET',
-                    });
-                    responseFromTestServer = await response.json();
-                    break;
-                }
+                endpoint = 'prime';
+                break;
             case 'f':
-                {
-                    const response = await fetch('http://20.244.56.144/test/fibo', {
-                        method: 'GET',
-                    });
-                    responseFromTestServer = await response.json();
-                    break;
-                } case 'e':
-                {
-                    const response = await fetch('http://20.244.56.144/test/even', {
-                        method: 'GET',
-                    });
-                    responseFromTestServer = await response.json();
-                    break;
-                }
+                endpoint = 'fibo';
+                break;
+            case 'e':
+                endpoint = 'even';
+                break;
             case 'r':
-                {
-                    const response = await fetch('http://20.244.56.144/test/random', {
-                        method: 'GET',
-                    });
-                    responseFromTestServer = await response.json();
-                    break;
-                }
+                endpoint = 'random';
+                break;
             default:
-                res.status(400).json({
-                    error: "invalid number id",
-                })
-                return;
+                return res.status(400).json({ error: 'Invalid number ID' });
         }
+
+        const response = await fetch(`http://20.244.56.144/test/${endpoint}`, {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${process.env.TOKEN}`
+            }
+        });
+        const responseFromTestServer = await response.json();
+        console.log(responseFromTestServer);
         const windowPrevState = [...numbers];
         numbers = [...numbers, ...responseFromTestServer.numbers].slice(-parseInt(process.env.WINDOW_SIZE ?? "10"));
         const json = {
@@ -59,3 +54,5 @@ calcRouter.get('/numbers/:numberId', async (req: Request, res: Response) => {
         })
     }
 })
+
+export default calcRouter;

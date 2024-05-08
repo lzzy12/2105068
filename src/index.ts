@@ -1,6 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
+import calcRouter from './calculator';
 
 const app: Application = express();
 const port = 3000;
@@ -20,7 +21,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).send('Something went wrong!');
 });
-
+app.use(calcRouter)
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
